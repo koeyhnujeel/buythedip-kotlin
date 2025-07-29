@@ -1,13 +1,13 @@
 package com.zunza.buythedip_kotlin.common
 
 import jakarta.servlet.http.HttpServletResponse
-import jakarta.servlet.http.HttpServletResponse.*
 import org.springframework.core.MethodParameter
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.server.ServerHttpRequest
 import org.springframework.http.server.ServerHttpResponse
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -47,5 +47,17 @@ class GlobalResponseAdvice(
         val errorResponse = ErrorResponse(e.message)
         val apiResponse = ApiResponse(errorResponse, e.getStatusCode())
         return ResponseEntity.status(e.getStatusCode()).body(apiResponse)
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun methodArgumentNotValidExceptionHandler(e: MethodArgumentNotValidException): ResponseEntity<ApiResponse<ErrorResponse>> {
+        val errorMessages = e.fieldErrors.map { it.defaultMessage }
+
+        val message =  if (errorMessages.count() == 1) errorMessages[0] else null
+        val messages = if (errorMessages.count() > 1) errorMessages else null
+
+        val errorResponse = ErrorResponse(message, messages)
+        val apiResponse = ApiResponse(errorResponse, e.statusCode.value())
+        return ResponseEntity.status(e.statusCode).body(apiResponse)
     }
 }

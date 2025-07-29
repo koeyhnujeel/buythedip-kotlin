@@ -7,5 +7,5 @@ data class ErrorResponse(
     val message: String? = null,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    val messages: List<String>? = null
+    val messages: List<String?>? = null
 )
