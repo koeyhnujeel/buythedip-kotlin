@@ -1,0 +1,84 @@
+//  REST API Documentation
+// :doctype: book
+// :icons: font
+// :source-highlighter: coderay
+// :toc: left
+// :toclevels: 3
+// :sectlinks:
+
+// 이 문서는 buythedip REST API의 사용법을 설명합니다.
+
+
+
+:toc: left
+
+++++
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toc = document.getElementById('toc');
+    if (toc) {
+        const lists = toc.querySelectorAll('ul ul');
+        lists.forEach(function(ul) {
+            ul.style.display = 'none';
+            const parentLi = ul.parentElement;
+            if (parentLi && parentLi.querySelector('a')) {
+                const btn = document.createElement('span');
+                btn.textContent = ' [+] ';
+                btn.style.cursor = 'pointer';
+                btn.style.color = '#06c';
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (ul.style.display === 'none') {
+                        ul.style.display = '';
+                        btn.textContent = ' [-] ';
+                    } else {
+                        ul.style.display = 'none';
+                        btn.textContent = ' [+] ';
+                    }
+                });
+                parentLi.insertBefore(btn, parentLi.firstChild);
+            }
+        });
+    }
+});
+</script>
+++++
+
+== User API
+
+=== 회원가입 - 성공
+
+include::{snippets}/signup-success/http-request.adoc[]
+include::{snippets}/signup-success/request-fields.adoc[]
+include::{snippets}/signup-success/http-response.adoc[]
+include::{snippets}/signup-success/response-fields.adoc[]
+
+=== 회원가입 시 계정 ID 중복 체크 - 성공
+
+include::{snippets}/auth-check-availability-conflict-account-id-success/http-request.adoc[]
+include::{snippets}/auth-check-availability-conflict-account-id-success/request-fields.adoc[]
+include::{snippets}/auth-check-availability-conflict-account-id-success/http-response.adoc[]
+include::{snippets}/auth-check-availability-conflict-account-id-success/response-fields.adoc[]
+
+=== 회원가입 시 계정 ID 중복 - 실패
+
+include::{snippets}/auth-check-availability-conflict-account-id-fail/http-request.adoc[]
+include::{snippets}/auth-check-availability-conflict-account-id-fail/request-fields.adoc[]
+include::{snippets}/auth-check-availability-conflict-account-id-fail/http-response.adoc[]
+include::{snippets}/auth-check-availability-conflict-account-id-fail/response-fields.adoc[]
+
+=== 회원가입 시 닉네임 중복 체크 - 성공
+
+include::{snippets}/auth-check-availability-conflict-nickname-success/http-request.adoc[]
+include::{snippets}/auth-check-availability-conflict-nickname-success/request-fields.adoc[]
+include::{snippets}/auth-check-availability-conflict-nickname-success/http-response.adoc[]
+include::{snippets}/auth-check-availability-conflict-nickname-success/response-fields.adoc[]
+
+{empty}
+
+=== 회원가입 시 닉네임 중복 체크 - 실패
+
+include::{snippets}/auth-check-availability-conflict-nickname-fail/http-request.adoc[]
+include::{snippets}/auth-check-availability-conflict-nickname-fail/request-fields.adoc[]
+include::{snippets}/auth-check-availability-conflict-nickname-fail/http-response.adoc[]
+include::{snippets}/auth-check-availability-conflict-nickname-fail/response-fields.adoc[]
