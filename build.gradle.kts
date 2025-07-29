@@ -44,6 +44,9 @@ dependencies {
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 
+	// JWT
+	implementation("io.jsonwebtoken:jjwt:0.12.6")
+
 	// Kotest
 	testImplementation("io.kotest:kotest-runner-junit5-jvm:5.9.1")
 	testImplementation("io.kotest:kotest-assertions-core-jvm:5.9.1")
@@ -55,6 +58,9 @@ dependencies {
 
 	// Asciidoctor
 	"asciidoctorExt"("org.springframework.restdocs:spring-restdocs-asciidoctor")
+
+	// logging
+	implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
 
 	runtimeOnly("com.mysql:mysql-connector-j")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
