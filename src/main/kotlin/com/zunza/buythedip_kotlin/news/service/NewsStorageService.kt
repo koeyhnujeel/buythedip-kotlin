@@ -6,6 +6,7 @@ import com.zunza.buythedip_kotlin.news.repository.NewsRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.stereotype.Service
 
 private val logger = KotlinLogging.logger {  }
@@ -14,6 +15,7 @@ private val logger = KotlinLogging.logger {  }
 class NewsStorageService(
     private val newsRepository: NewsRepository
 ) {
+    @CacheEvict(cacheNames = ["NEWS:PAGE"], allEntries = true)
     suspend fun saveNews(translatedNewsList: List<TranslatedNewsDto>) {
         withContext(Dispatchers.IO) {
             newsRepository.saveAll(translatedNewsList.map { translatedNews ->
