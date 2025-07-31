@@ -37,7 +37,6 @@ class GlobalResponseAdvice(
 
         return when (body) {
             is ApiResponse<*> -> body
-            null -> ApiResponse(null, status)
             else -> ApiResponse(body, status)
         }
     }

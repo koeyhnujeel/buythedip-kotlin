@@ -1,5 +1,6 @@
 package com.zunza.buythedip_kotlin.user.controller
 
+import com.zunza.buythedip_kotlin.common.ApiResponse
 import com.zunza.buythedip_kotlin.user.dto.LoginRequest
 import com.zunza.buythedip_kotlin.user.dto.LoginResponse
 import com.zunza.buythedip_kotlin.user.dto.SignupRequest
@@ -23,7 +24,7 @@ class AuthController(
     @PostMapping("/api/auth/validation/check-availability")
     fun checkAvailability(
         @RequestBody validationRequest: ValidationRequest
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<ApiResponse<Unit>> {
         authService.checkAvailability(validationRequest)
         return ResponseEntity.status(SC_OK).build()
     }
@@ -31,7 +32,7 @@ class AuthController(
     @PostMapping("/api/auth/signup")
     fun signup(
         @Valid @RequestBody signupRequest: SignupRequest
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<ApiResponse<Unit>> {
         authService.signup(signupRequest)
         return ResponseEntity.status(SC_CREATED).build()
     }
@@ -53,7 +54,7 @@ class AuthController(
         @AuthenticationPrincipal userId: Long
     ): ResponseEntity<Unit> {
         authService.logout(userId)
-        val responseCookie = getHttpOnlyCookie("", 0)
+        val responseCookie = getHttpOnlyCookie(maxAge = 0)
 
         return ResponseEntity
             .status(SC_OK)
@@ -61,8 +62,12 @@ class AuthController(
             .build()
     }
 
+    /**
+     * TODO: 토큰 재발급
+     */
+
     fun getHttpOnlyCookie(
-        value: String,
+        value: String = "",
         maxAge: Long
     ): ResponseCookie = ResponseCookie.from("refreshToken", value)
             .httpOnly(true)
