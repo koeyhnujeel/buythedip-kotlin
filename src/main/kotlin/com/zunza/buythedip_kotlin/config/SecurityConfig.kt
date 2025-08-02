@@ -47,6 +47,7 @@ class SecurityConfig(
 
             .authorizeHttpRequests { authorize ->
                 authorize
+                    .requestMatchers("/ws/chat/**").permitAll()
                     .anyRequest().permitAll()
             }
 

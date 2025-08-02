@@ -1,6 +1,7 @@
 package com.zunza.buythedip_kotlin.security.jwt
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.jsonwebtoken.Claims
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -63,16 +64,21 @@ class JwtTokenProvider(
         }
     }
 
-    fun getAuthentication(token: String?): Authentication {
-        val payload = Jwts.parser().verifyWith(getKey()).build().parseSignedClaims(token).payload
-        val userId = payload.subject as String
-        val authorities = payload["auth"] as? List<*>
+    fun getAuthentication(token: String): Authentication {
+        val claims = getClaims(token)
+        val userId = claims.subject as String
+        val authorities = claims["auth"] as? List<*>
 
         return UsernamePasswordAuthenticationToken(userId.toLong(),
             null,
             authorities?.filterIsInstance<String>()
                 ?.map { SimpleGrantedAuthority(it) })
     }
+
+    fun getClaims(token: String): Claims {
+        return Jwts.parser().verifyWith(getKey()).build().parseSignedClaims(token).payload
+    }
+
 
     private fun getKey(): SecretKey {
         return Keys.hmacShaKeyFor(this.key.toByteArray())
