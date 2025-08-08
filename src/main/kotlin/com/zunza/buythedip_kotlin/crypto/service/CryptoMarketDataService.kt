@@ -1,13 +1,14 @@
 package com.zunza.buythedip_kotlin.crypto.service
 
 import com.zunza.buythedip_kotlin.crypto.dto.CryptoWithLogoDto
+import com.zunza.buythedip_kotlin.crypto.dto.SingleTickerPriceResponse
 import com.zunza.buythedip_kotlin.crypto.dto.TopVolumeTickerPriceResponse
 import com.zunza.buythedip_kotlin.crypto.dto.TopVolumeTickerSummaryResponse
 import com.zunza.buythedip_kotlin.crypto.dto.TradeData
 import com.zunza.buythedip_kotlin.crypto.repository.CryptoMarketDataRepository
 import com.zunza.buythedip_kotlin.crypto.repository.CryptoRepository
 import com.zunza.buythedip_kotlin.infrastructure.redis.constants.RedisKey.*
-import com.zunza.buythedip_kotlin.infrastructure.redis.pub_sub.Channels
+import com.zunza.buythedip_kotlin.infrastructure.redis.pub_sub.Channels.*
 import com.zunza.buythedip_kotlin.infrastructure.redis.pub_sub.RedisMessagePublisher
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.redis.core.ZSetOperations
@@ -64,7 +65,7 @@ class CryptoMarketDataService(
             .associateBy { cryptoWithLogoDto -> cryptoWithLogoDto.symbol }
 
         redisMessagePublisher.publishMessage(
-            Channels.TOP_VOLUME_TICKER_SUMMARY_CHANNEL.topic,
+            TOP_VOLUME_TICKER_SUMMARY_CHANNEL.topic,
             convertToTopVolumeTickerSummaryResponse(cryptoMap, tickers)
         )
     }
@@ -74,13 +75,24 @@ class CryptoMarketDataService(
 
         if (tradeData.symbol in symbols) {
             redisMessagePublisher.publishMessage(
-                Channels.TOP_VOLUME_TICKER_PRICE_CHANNEL.topic,
-                convertToTopVolumeTickerPriceResponse(
-                    tradeData.symbol,
-                    tradeData.price
-                )
+                TOP_VOLUME_TICKER_PRICE_CHANNEL.topic,
+                convertToTopVolumeTickerPriceResponse(tradeData.symbol, tradeData.price)
             )
         }
+    }
+
+    fun publishSingleTickerPrice(tradeData: TradeData) {
+        val singleTickerPriceResponse = SingleTickerPriceResponse(
+            extractOriginalSymbol(tradeData.symbol),
+            tradeData.price,
+            getChangePrice(tradeData.symbol, tradeData.price),
+            getChangeRate(tradeData.symbol, tradeData.price)
+            )
+
+        redisMessagePublisher.publishMessage(
+            SINGLE_TICKER_PRICE_CHANNEL.topic,
+            singleTickerPriceResponse
+        )
     }
 
     private fun generateCurrentMinuteBucketKey(tradeTime: Long): String {
@@ -125,8 +137,7 @@ class CryptoMarketDataService(
         currentPrice: Double
     ): TopVolumeTickerPriceResponse {
         val originalSymbol = extractOriginalSymbol(symbol)
-        val openPrice = getOpenPrice(symbol)
-        val changeRate = getChangeRate(currentPrice, openPrice)
+        val changeRate = getChangeRate(symbol, currentPrice)
 
         return TopVolumeTickerPriceResponse(originalSymbol, currentPrice, changeRate)
     }
@@ -135,5 +146,13 @@ class CryptoMarketDataService(
 
     private fun getOpenPrice(symbol: String) = cryptoMarketDataRepository.findOpenPriceBySymbol(symbol)
 
-    private fun getChangeRate(currentPrice: Double, openPrice: Double) = ((currentPrice - openPrice) / openPrice) * 100;
+    private fun getChangeRate(symbol: String, currentPrice: Double): Double {
+        val openPrice = getOpenPrice(symbol)
+
+        return if (openPrice == 0.0) 0.0
+        else ((currentPrice - openPrice) / openPrice) * 100;
+    }
+
+    private fun getChangePrice(symbol: String, currentPrice: Double) = currentPrice - getOpenPrice(symbol)
+
 }

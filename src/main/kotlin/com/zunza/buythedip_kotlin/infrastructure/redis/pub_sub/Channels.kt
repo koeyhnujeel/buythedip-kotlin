@@ -6,5 +6,6 @@ enum class Channels(
 ) {
     CHAT_CHANNEL("chat:message"),
     TOP_VOLUME_TICKER_SUMMARY_CHANNEL("top:volume:ticker:summary"),
-    TOP_VOLUME_TICKER_PRICE_CHANNEL("top:volume:ticker:price")
+    TOP_VOLUME_TICKER_PRICE_CHANNEL("top:volume:ticker:price"),
+    SINGLE_TICKER_PRICE_CHANNEL("single:ticker:price")
 }

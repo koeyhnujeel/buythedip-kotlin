@@ -67,5 +67,6 @@ class TradeWebSocketClient(
 
         launch { cryptoMarketDataService.accumulateMinuteTickerVolume(tradeData) }
         launch { cryptoMarketDataService.publishTopNTickerPrice(tradeData) }
+        launch { cryptoMarketDataService.publishSingleTickerPrice(tradeData) }
     }
 }
