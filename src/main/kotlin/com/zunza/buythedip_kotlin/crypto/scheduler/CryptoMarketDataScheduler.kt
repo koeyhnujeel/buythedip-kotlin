@@ -45,4 +45,21 @@ fun updateDailyOpenPrice() {
             logger.warn { e.message }
         }
     }
+
+    // TODO: 초기 데이터
+    @Scheduled(cron = "0/10 * * * * *")
+    @SchedulerLock(
+        name = "CryptoMarketDataScheduler_updateTickerVolume"
+    )
+    fun updateTickerVolume() {
+        cryptoMarketDataService.aggregateTickerVolumesInRange(AGGREGATION_WINDOW_MINUTE)
+        val tickers = cryptoMarketDataService.getTopNTickersByVolume(TOP_N)
+
+        if (tickers.isNullOrEmpty()) {
+            return
+        }
+
+        cryptoMarketDataService.cacheTopNTickerSymbols(tickers)
+        cryptoMarketDataService.publishTopNTickerSummaries(tickers)
+    }
 }

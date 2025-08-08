@@ -20,6 +20,17 @@ class RedisListenerConfig(
     }
 
     @Bean
+    fun topVolumeTickerSummaryChannelTopic(): ChannelTopic {
+        return ChannelTopic(Channels.TOP_VOLUME_TICKER_SUMMARY_CHANNEL.topic)
+    }
+
+    @Bean
+    fun topVolumeTickerPriceChannelTopic(): ChannelTopic {
+        return ChannelTopic(Channels.TOP_VOLUME_TICKER_PRICE_CHANNEL.topic)
+    }
+
+
+    @Bean
     fun listenerAdapter(): MessageListenerAdapter {
         return MessageListenerAdapter(subscriber, "sendMessage")
     }
@@ -29,6 +40,8 @@ class RedisListenerConfig(
         val container = RedisMessageListenerContainer()
         container.setConnectionFactory(redisConnectionFactory)
         container.addMessageListener(listenerAdapter(), chatChannelTopic())
+        container.addMessageListener(listenerAdapter(), topVolumeTickerSummaryChannelTopic())
+        container.addMessageListener(listenerAdapter(), topVolumeTickerPriceChannelTopic())
         return container
     }
 }

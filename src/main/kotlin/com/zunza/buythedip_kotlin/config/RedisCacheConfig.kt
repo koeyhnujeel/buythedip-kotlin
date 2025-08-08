@@ -1,6 +1,6 @@
 package com.zunza.buythedip_kotlin.config
 
-import com.zunza.buythedip_kotlin.infrastructure.redis.CacheType
+import com.zunza.buythedip_kotlin.infrastructure.redis.constants.CacheType
 import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
