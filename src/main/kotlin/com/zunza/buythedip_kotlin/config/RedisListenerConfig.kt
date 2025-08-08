@@ -1,6 +1,6 @@
 package com.zunza.buythedip_kotlin.config
 
-import com.zunza.buythedip_kotlin.infrastructure.redis.pub_sub.Channels
+import com.zunza.buythedip_kotlin.infrastructure.redis.pub_sub.Channels.*
 import com.zunza.buythedip_kotlin.infrastructure.redis.pub_sub.RedisMessageSubscriber
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -16,19 +16,23 @@ class RedisListenerConfig(
 ) {
     @Bean
     fun chatChannelTopic(): ChannelTopic {
-        return ChannelTopic(Channels.CHAT_CHANNEL.topic)
+        return ChannelTopic(CHAT_CHANNEL.topic)
     }
 
     @Bean
     fun topVolumeTickerSummaryChannelTopic(): ChannelTopic {
-        return ChannelTopic(Channels.TOP_VOLUME_TICKER_SUMMARY_CHANNEL.topic)
+        return ChannelTopic(TOP_VOLUME_TICKER_SUMMARY_CHANNEL.topic)
     }
 
     @Bean
     fun topVolumeTickerPriceChannelTopic(): ChannelTopic {
-        return ChannelTopic(Channels.TOP_VOLUME_TICKER_PRICE_CHANNEL.topic)
+        return ChannelTopic(TOP_VOLUME_TICKER_PRICE_CHANNEL.topic)
     }
 
+    @Bean
+    fun singleTickerPriceChannelTopic(): ChannelTopic {
+        return ChannelTopic(SINGLE_TICKER_PRICE_CHANNEL.topic)
+    }
 
     @Bean
     fun listenerAdapter(): MessageListenerAdapter {
@@ -42,6 +46,7 @@ class RedisListenerConfig(
         container.addMessageListener(listenerAdapter(), chatChannelTopic())
         container.addMessageListener(listenerAdapter(), topVolumeTickerSummaryChannelTopic())
         container.addMessageListener(listenerAdapter(), topVolumeTickerPriceChannelTopic())
+        container.addMessageListener(listenerAdapter(), singleTickerPriceChannelTopic())
         return container
     }
 }

@@ -15,7 +15,7 @@ class CryptoMarketDataRepository(
     }
 
     fun findOpenPriceBySymbol(symbol: String): Double {
-        return redisTemplate.opsForValue().get(OPEN_PRICE_KEY_PREFIX.value + symbol) as Double
+        return redisTemplate.opsForValue().get(OPEN_PRICE_KEY_PREFIX.value + symbol) as? Double ?: 0.0
     }
 
     fun saveVolumeByMinute(key: String, symbol: String, volume: Double, ttl: Long) {
