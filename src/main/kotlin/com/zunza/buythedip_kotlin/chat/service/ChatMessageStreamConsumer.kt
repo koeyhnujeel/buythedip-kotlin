@@ -1,7 +1,7 @@
 package com.zunza.buythedip_kotlin.chat.service
 
 import com.zunza.buythedip_kotlin.chat.entity.ChatMessage
-import com.zunza.buythedip_kotlin.infrastructure.redis.RedisKey.*
+import com.zunza.buythedip_kotlin.infrastructure.redis.constants.RedisKey.*
 import com.zunza.buythedip_kotlin.infrastructure.redis.stream.RedisStreamService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PostConstruct

@@ -1,7 +1,7 @@
 package com.zunza.buythedip_kotlin.chat.service
 
 import com.zunza.buythedip_kotlin.chat.dto.ChatMessageDto
-import com.zunza.buythedip_kotlin.infrastructure.redis.RedisKey.*
+import com.zunza.buythedip_kotlin.infrastructure.redis.constants.RedisKey.*
 import com.zunza.buythedip_kotlin.infrastructure.redis.pub_sub.Channels
 import com.zunza.buythedip_kotlin.infrastructure.redis.pub_sub.RedisMessagePublisher
 import com.zunza.buythedip_kotlin.infrastructure.redis.stream.RedisStreamService
