@@ -19,7 +19,7 @@ class WebSocketConfig(
 
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.setErrorHandler(StompExceptionHandler())
-        registry.addEndpoint("/ws/chat")
+        registry.addEndpoint("/ws/chat", "/ws/market")
             .addInterceptors(WebSocketHandShakeInterceptor())
             .setAllowedOriginPatterns("*")
             .withSockJS()
