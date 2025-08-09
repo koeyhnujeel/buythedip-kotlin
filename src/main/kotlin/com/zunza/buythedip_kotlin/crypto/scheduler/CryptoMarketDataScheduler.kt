@@ -1,7 +1,6 @@
 package com.zunza.buythedip_kotlin.crypto.scheduler
 
 import com.zunza.buythedip_kotlin.crypto.service.BinanceService
-import com.zunza.buythedip_kotlin.crypto.service.CryptoMarketDataService
 import com.zunza.buythedip_kotlin.crypto.service.CryptoService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
@@ -14,7 +13,6 @@ private val logger = KotlinLogging.logger {  }
 class CryptoMarketDataScheduler(
     private val binanceService: BinanceService,
     private val cryptoService: CryptoService,
-    private val cryptoMarketDataService: CryptoMarketDataService,
 ) {
     companion object{
         private const val SYMBOL_SUFFIX = "USDT"
@@ -27,6 +25,7 @@ class CryptoMarketDataScheduler(
 
     @Scheduled(cron = "7 0 0 * * *", zone = "UTC")
     @SchedulerLock(name = "CryptoMarketScheduler_updateDailyOpenPrice")
+//    @EventListener(ApplicationReadyEvent::class)
 fun updateDailyOpenPrice() {
         try {
             val cryptos = cryptoService.getAllCrypto()
@@ -39,7 +38,7 @@ fun updateDailyOpenPrice() {
                 ).block()!!
 
                 logger.info { "symbol: ${crypto.symbol + SYMBOL_SUFFIX} / open price: $openPrice" }
-                cryptoMarketDataService.updateOpenPrice(crypto.symbol + SYMBOL_SUFFIX, openPrice)
+                cryptoService.updateOpenPrice(crypto.symbol + SYMBOL_SUFFIX, openPrice)
             }
         }  catch (e: Exception) {
             logger.warn { e.message }
@@ -52,14 +51,14 @@ fun updateDailyOpenPrice() {
         name = "CryptoMarketDataScheduler_updateTickerVolume"
     )
     fun updateTickerVolume() {
-        cryptoMarketDataService.aggregateTickerVolumesInRange(AGGREGATION_WINDOW_MINUTE)
-        val tickers = cryptoMarketDataService.getTopNTickersByVolume(TOP_N)
+        cryptoService.aggregateTickerVolumesInRange(AGGREGATION_WINDOW_MINUTE)
+        val tickers = cryptoService.getTopNTickersByVolume(TOP_N)
 
         if (tickers.isNullOrEmpty()) {
             return
         }
 
-        cryptoMarketDataService.cacheTopNTickerSymbols(tickers)
-        cryptoMarketDataService.publishTopNTickerSummaries(tickers)
+        cryptoService.cacheTopNTickerSymbols(tickers)
+        cryptoService.publishTopNTickerSummaries(tickers)
     }
 }
