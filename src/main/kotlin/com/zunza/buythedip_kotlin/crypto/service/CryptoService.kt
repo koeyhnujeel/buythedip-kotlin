@@ -1,6 +1,5 @@
 package com.zunza.buythedip_kotlin.crypto.service
 
-import com.zunza.buythedip_kotlin.crypto.dto.CryptoInformationResponse
 import com.zunza.buythedip_kotlin.crypto.dto.CryptoWithLogoDto
 import com.zunza.buythedip_kotlin.crypto.dto.KlineData
 import com.zunza.buythedip_kotlin.crypto.dto.KlineResponse
@@ -22,7 +21,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-private val logger = KotlinLogging.logger {  }
+private val logger = KotlinLogging.logger { }
 
 @Service
 class CryptoService(
@@ -37,7 +36,10 @@ class CryptoService(
 
     fun getAllCrypto() = cryptoRepository.findAll()
 
-    fun updateOpenPrice(symbol: String, openPrice: Double) {
+    fun updateOpenPrice(
+        symbol: String,
+        openPrice: Double,
+    ) {
         cryptoMarketDataRepository.saveOpenPrice(symbol, openPrice)
     }
 
@@ -46,7 +48,7 @@ class CryptoService(
             generateCurrentMinuteBucketKey(tradeData.tradeTime),
             tradeData.symbol,
             tradeData.price * tradeData.quantity,
-            BUCKET_TTL_MINUTE
+            BUCKET_TTL_MINUTE,
         )
     }
 
@@ -55,9 +57,7 @@ class CryptoService(
         cryptoMarketDataRepository.aggregateVolume(keys, AGGREGATED_VOLUME_KEY.value)
     }
 
-    fun getTopNTickersByVolume(n: Long): Set<ZSetOperations.TypedTuple<Any>>? {
-        return cryptoMarketDataRepository.findTopNTickers(n)
-    }
+    fun getTopNTickersByVolume(n: Long): Set<ZSetOperations.TypedTuple<Any>>? = cryptoMarketDataRepository.findTopNTickers(n)
 
     fun cacheTopNTickerSymbols(tickers: Set<ZSetOperations.TypedTuple<Any>>) {
         val symbols = tickers.map { ticker -> ticker.value.toString() }.toSet()
@@ -66,19 +66,23 @@ class CryptoService(
 
     fun getTopNTickerSummaries(): List<TopVolumeTickerSummaryResponse> {
         val tickers = getTopNTickersByVolume(50) ?: return emptyList()
-        val cryptoMap: Map<String, CryptoWithLogoDto> = cryptoRepository.findAllWithLogo()
-            .associateBy { cryptoWithLogoDto -> cryptoWithLogoDto.symbol }
+        val cryptoMap: Map<String, CryptoWithLogoDto> =
+            cryptoRepository
+                .findAllWithLogo()
+                .associateBy { cryptoWithLogoDto -> cryptoWithLogoDto.symbol }
 
         return convertToTopVolumeTickerSummaryResponse(cryptoMap, tickers)
     }
 
     fun publishTopNTickerSummaries(tickers: Set<ZSetOperations.TypedTuple<Any>>) {
-        val cryptoMap: Map<String, CryptoWithLogoDto> = cryptoRepository.findAllWithLogo()
-            .associateBy { cryptoWithLogoDto -> cryptoWithLogoDto.symbol }
+        val cryptoMap: Map<String, CryptoWithLogoDto> =
+            cryptoRepository
+                .findAllWithLogo()
+                .associateBy { cryptoWithLogoDto -> cryptoWithLogoDto.symbol }
 
         redisMessagePublisher.publishMessage(
             TOP_VOLUME_TICKER_SUMMARY_CHANNEL.topic,
-            convertToTopVolumeTickerSummaryResponse(cryptoMap, tickers)
+            convertToTopVolumeTickerSummaryResponse(cryptoMap, tickers),
         )
     }
 
@@ -88,43 +92,46 @@ class CryptoService(
         if (tradeData.symbol in symbols) {
             redisMessagePublisher.publishMessage(
                 TOP_VOLUME_TICKER_PRICE_CHANNEL.topic,
-                convertToTopVolumeTickerPriceResponse(tradeData.symbol, tradeData.price)
+                convertToTopVolumeTickerPriceResponse(tradeData.symbol, tradeData.price),
             )
         }
     }
 
     fun publishSingleTickerPrice(tradeData: TradeData) {
-        val singleTickerPriceResponse = SingleTickerPriceResponse(
-            extractOriginalSymbol(tradeData.symbol),
-            tradeData.price,
-            getChangePrice(tradeData.symbol, tradeData.price),
-            getChangeRate(tradeData.symbol, tradeData.price)
+        val singleTickerPriceResponse =
+            SingleTickerPriceResponse(
+                extractOriginalSymbol(tradeData.symbol),
+                tradeData.price,
+                getChangePrice(tradeData.symbol, tradeData.price),
+                getChangeRate(tradeData.symbol, tradeData.price),
             )
 
         redisMessagePublisher.publishMessage(
             SINGLE_TICKER_PRICE_CHANNEL.topic,
-            singleTickerPriceResponse
+            singleTickerPriceResponse,
         )
     }
 
     fun publishKlineData(klineData: KlineData) {
         redisMessagePublisher.publishMessage(
             SINGLE_TICKER_KLINE_CHANNEL.topic,
-            KlineResponse.createRealtimeKlineResponse(klineData)
-            )
+            KlineResponse.createRealtimeKlineResponse(klineData),
+        )
     }
 
     fun getCryptoInformation(id: Long) = cryptoRepository.findByIdWithMetadata(id)
 
     private fun generateCurrentMinuteBucketKey(tradeTime: Long): String {
-        val tradeDateTime = LocalDateTime.ofInstant(
-            Instant.ofEpochMilli(tradeTime),
-            ZoneId.of(ZONE_ID)
-        )
+        val tradeDateTime =
+            LocalDateTime.ofInstant(
+                Instant.ofEpochMilli(tradeTime),
+                ZoneId.of(ZONE_ID),
+            )
 
-        return MINUTE_BUCKET_KEY_PREFIX.value + tradeDateTime.format(
-            DateTimeFormatter.ofPattern("yyyyMMddHHmm")
-        )
+        return MINUTE_BUCKET_KEY_PREFIX.value +
+            tradeDateTime.format(
+                DateTimeFormatter.ofPattern("yyyyMMddHHmm"),
+            )
     }
 
     private fun generateKeysForLastNMinutes(minutes: Int): List<String> {
@@ -137,9 +144,9 @@ class CryptoService(
 
     private fun convertToTopVolumeTickerSummaryResponse(
         cryptoMap: Map<String, CryptoWithLogoDto>,
-        tickers: Set<ZSetOperations.TypedTuple<Any>>
-    ): List<TopVolumeTickerSummaryResponse> {
-        return tickers.map { ticker ->
+        tickers: Set<ZSetOperations.TypedTuple<Any>>,
+    ): List<TopVolumeTickerSummaryResponse> =
+        tickers.map { ticker ->
             val symbol = extractOriginalSymbol(ticker.value.toString())
             val cryptoWithLogo = cryptoMap[symbol]
 
@@ -148,14 +155,13 @@ class CryptoService(
                 cryptoWithLogo.name,
                 cryptoWithLogo.symbol,
                 cryptoWithLogo.logo,
-                ticker.score!!
+                ticker.score!!,
             )
         }
-    }
 
     private fun convertToTopVolumeTickerPriceResponse(
         symbol: String,
-        currentPrice: Double
+        currentPrice: Double,
     ): TopVolumeTickerPriceResponse {
         val originalSymbol = extractOriginalSymbol(symbol)
         val changeRate = getChangeRate(symbol, currentPrice)
@@ -167,12 +173,21 @@ class CryptoService(
 
     private fun getOpenPrice(symbol: String) = cryptoMarketDataRepository.findOpenPriceBySymbol(symbol)
 
-    private fun getChangeRate(symbol: String, currentPrice: Double): Double {
+    private fun getChangeRate(
+        symbol: String,
+        currentPrice: Double,
+    ): Double {
         val openPrice = getOpenPrice(symbol)
 
-        return if (openPrice == 0.0) 0.0
-        else ((currentPrice - openPrice) / openPrice) * 100;
+        return if (openPrice == 0.0) {
+            0.0
+        } else {
+            ((currentPrice - openPrice) / openPrice) * 100
+        }
     }
 
-    private fun getChangePrice(symbol: String, currentPrice: Double) = currentPrice - getOpenPrice(symbol)
+    private fun getChangePrice(
+        symbol: String,
+        currentPrice: Double,
+    ) = currentPrice - getOpenPrice(symbol)
 }
