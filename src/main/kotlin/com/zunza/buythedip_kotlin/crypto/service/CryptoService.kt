@@ -63,6 +63,13 @@ class CryptoService(
         cryptoMarketDataRepository.updateTopVolumeSymbols(symbols)
     }
 
+    fun getTopNTickerSummaries(): List<TopVolumeTickerSummaryResponse> {
+        val tickers = getTopNTickersByVolume(50) ?: return emptyList()
+        val cryptoMap: Map<String, CryptoWithLogoDto> = cryptoRepository.findAllWithLogo()
+            .associateBy { cryptoWithLogoDto -> cryptoWithLogoDto.symbol }
+
+        return convertToTopVolumeTickerSummaryResponse(cryptoMap, tickers)
+    }
 
     fun publishTopNTickerSummaries(tickers: Set<ZSetOperations.TypedTuple<Any>>) {
         val cryptoMap: Map<String, CryptoWithLogoDto> = cryptoRepository.findAllWithLogo()
