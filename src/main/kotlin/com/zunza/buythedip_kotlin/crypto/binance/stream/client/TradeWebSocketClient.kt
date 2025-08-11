@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.zunza.buythedip_kotlin.crypto.dto.SubscribeRequest
 import com.zunza.buythedip_kotlin.crypto.dto.TradeStreamResponse
 import com.zunza.buythedip_kotlin.crypto.repository.CryptoRepository
-import com.zunza.buythedip_kotlin.crypto.service.CryptoMarketDataService
+import com.zunza.buythedip_kotlin.crypto.service.CryptoService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -23,12 +23,12 @@ class TradeWebSocketClient(
     private val webSocketClient: WebSocketClient,
     private val cryptoRepository: CryptoRepository,
     private val objectMapper: ObjectMapper,
-    private val cryptoMarketDataService: CryptoMarketDataService
+    private val cryptoService: CryptoService
 ) : TextWebSocketHandler() {
 
     companion object {
         private const val URL = "wss://data-stream.binance.vision/stream"
-        private const val STREAM_SUFFIX = "usdt@trade"
+        private const val STREAM_SUFFIX = "usdt@aggTrade"
     }
 
     @EventListener(ApplicationReadyEvent::class)
@@ -65,8 +65,8 @@ class TradeWebSocketClient(
 
         val tradeData = tradeStreamResponse.tradeData ?: return@runBlocking
 
-        launch { cryptoMarketDataService.accumulateMinuteTickerVolume(tradeData) }
-        launch { cryptoMarketDataService.publishTopNTickerPrice(tradeData) }
-        launch { cryptoMarketDataService.publishSingleTickerPrice(tradeData) }
+        launch { cryptoService.accumulateMinuteTickerVolume(tradeData) }
+        launch { cryptoService.publishTopNTickerPrice(tradeData) }
+        launch { cryptoService.publishSingleTickerPrice(tradeData) }
     }
 }
