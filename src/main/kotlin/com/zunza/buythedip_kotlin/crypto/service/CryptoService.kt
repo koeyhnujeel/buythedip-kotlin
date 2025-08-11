@@ -1,6 +1,8 @@
 package com.zunza.buythedip_kotlin.crypto.service
 
 import com.zunza.buythedip_kotlin.crypto.dto.CryptoWithLogoDto
+import com.zunza.buythedip_kotlin.crypto.dto.KlineData
+import com.zunza.buythedip_kotlin.crypto.dto.KlineResponse
 import com.zunza.buythedip_kotlin.crypto.dto.SingleTickerPriceResponse
 import com.zunza.buythedip_kotlin.crypto.dto.TopVolumeTickerPriceResponse
 import com.zunza.buythedip_kotlin.crypto.dto.TopVolumeTickerSummaryResponse
@@ -22,15 +24,17 @@ import java.time.temporal.ChronoUnit
 private val logger = KotlinLogging.logger {  }
 
 @Service
-class CryptoMarketDataService(
+class CryptoService(
     private val cryptoMarketDataRepository: CryptoMarketDataRepository,
     private val cryptoRepository: CryptoRepository,
-    private val redisMessagePublisher: RedisMessagePublisher
+    private val redisMessagePublisher: RedisMessagePublisher,
 ) {
     companion object {
         private const val ZONE_ID = "UTC"
         private const val BUCKET_TTL_MINUTE = 31L
     }
+
+    fun getAllCrypto() = cryptoRepository.findAll()
 
     fun updateOpenPrice(symbol: String, openPrice: Double) {
         cryptoMarketDataRepository.saveOpenPrice(symbol, openPrice)
@@ -93,6 +97,13 @@ class CryptoMarketDataService(
             SINGLE_TICKER_PRICE_CHANNEL.topic,
             singleTickerPriceResponse
         )
+    }
+
+    fun publishKlineData(klineData: KlineData) {
+        redisMessagePublisher.publishMessage(
+            SINGLE_TICKER_KLINE_CHANNEL.topic,
+            KlineResponse.createRealtimeKlineResponse(klineData)
+            )
     }
 
     private fun generateCurrentMinuteBucketKey(tradeTime: Long): String {
