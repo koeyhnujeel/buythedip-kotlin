@@ -29,18 +29,17 @@ class StompSessionEventListener(
 
     @EventListener
     fun handleSessionSubscribe(event: SessionSubscribeEvent) {
-        logger.info{ "Subscribe" }
-
         val accessor: StompHeaderAccessor = StompHeaderAccessor.wrap(event.message)
         val sessionId = accessor.sessionId ?: return
         val subscriptionId = accessor.subscriptionId ?: return
         val destination = accessor.destination ?: return
+        val destinationKey = "$sessionId$subscriptionId"
 
         if (!destination.startsWith(KLINE_TOPIC_PREFIX)) return
 
-        val count: Long? = redisTemplate.opsForValue().increment(destination) ?: 0L
-        redisTemplate.opsForValue().set(subscriptionId, destination)
-        redisTemplate.opsForSet().add(sessionId, subscriptionId)
+        val count: Long = redisTemplate.opsForValue().increment(destination) ?: 0L
+        redisTemplate.opsForValue().set(destinationKey, destination)
+        redisTemplate.opsForSet().add(sessionId, destinationKey)
 
         if (count == 1L) {
             val(symbol, interval) = destination
@@ -53,38 +52,35 @@ class StompSessionEventListener(
 
     @EventListener
     fun handleSessionUnsubscribe(event: SessionUnsubscribeEvent) {
-        logger.info{ "Unsubscribe" }
-
         val accessor: StompHeaderAccessor = StompHeaderAccessor.wrap(event.message)
         val sessionId = accessor.sessionId ?: return
         val subscriptionId = accessor.subscriptionId ?: return
+        val destinationKey = "$sessionId$subscriptionId"
 
-        val destination = redisTemplate.opsForValue().get(subscriptionId)
+        val destination = redisTemplate.opsForValue().get(destinationKey)
             ?.toString()
             ?: return
 
         if (!destination.startsWith(KLINE_TOPIC_PREFIX)) return
 
         safeDecrement(destination)
-        redisTemplate.delete(subscriptionId)
-        redisTemplate.opsForSet().remove(sessionId, subscriptionId)
+        redisTemplate.delete(destinationKey)
+        redisTemplate.opsForSet().remove(sessionId, destinationKey)
     }
 
     @EventListener
     fun handleDisconnect(event: SessionDisconnectEvent) {
-        logger.info{ "Disconnect" }
-
         val accessor: StompHeaderAccessor = StompHeaderAccessor.wrap(event.message)
         val sessionId = accessor.sessionId ?: return
 
-        val set = redisTemplate.opsForSet().members(sessionId) ?: return
+        val destinationKeys = redisTemplate.opsForSet().members(sessionId) ?: return
 
-        if (set.isEmpty()) {
+        if (destinationKeys.isEmpty()) {
             redisTemplate.delete(sessionId)
         }
 
-        for (subscriptionId in set) {
-            val destination = redisTemplate.opsForValue().get(subscriptionId).toString()
+        for (destinationKey in destinationKeys) {
+            val destination = redisTemplate.opsForValue().get(destinationKey).toString()
             safeDecrement(destination)
         }
 
