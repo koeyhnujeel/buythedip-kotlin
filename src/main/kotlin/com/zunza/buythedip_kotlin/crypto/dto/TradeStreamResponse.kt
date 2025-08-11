@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-class TradeStreamResponse(
+data class TradeStreamResponse(
 
     @JsonProperty("data")
     val tradeData: TradeData?
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-class TradeData(
+data class TradeData(
 
     @JsonProperty("s")
     val symbol: String,

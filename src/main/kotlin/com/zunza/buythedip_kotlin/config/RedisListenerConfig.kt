@@ -35,6 +35,11 @@ class RedisListenerConfig(
     }
 
     @Bean
+    fun singleTickerKlineChannelTopic(): ChannelTopic {
+        return ChannelTopic(SINGLE_TICKER_KLINE_CHANNEL.topic)
+    }
+
+    @Bean
     fun listenerAdapter(): MessageListenerAdapter {
         return MessageListenerAdapter(subscriber, "sendMessage")
     }
@@ -47,6 +52,7 @@ class RedisListenerConfig(
         container.addMessageListener(listenerAdapter(), topVolumeTickerSummaryChannelTopic())
         container.addMessageListener(listenerAdapter(), topVolumeTickerPriceChannelTopic())
         container.addMessageListener(listenerAdapter(), singleTickerPriceChannelTopic())
+        container.addMessageListener(listenerAdapter(), singleTickerKlineChannelTopic())
         return container
     }
 }
