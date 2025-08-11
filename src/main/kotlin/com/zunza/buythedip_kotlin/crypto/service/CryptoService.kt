@@ -1,5 +1,6 @@
 package com.zunza.buythedip_kotlin.crypto.service
 
+import com.zunza.buythedip_kotlin.crypto.dto.CryptoInformationResponse
 import com.zunza.buythedip_kotlin.crypto.dto.CryptoWithLogoDto
 import com.zunza.buythedip_kotlin.crypto.dto.KlineData
 import com.zunza.buythedip_kotlin.crypto.dto.KlineResponse
@@ -113,6 +114,8 @@ class CryptoService(
             )
     }
 
+    fun getCryptoInformation(id: Long) = cryptoRepository.findByIdWithMetadata(id)
+
     private fun generateCurrentMinuteBucketKey(tradeTime: Long): String {
         val tradeDateTime = LocalDateTime.ofInstant(
             Instant.ofEpochMilli(tradeTime),
@@ -172,5 +175,4 @@ class CryptoService(
     }
 
     private fun getChangePrice(symbol: String, currentPrice: Double) = currentPrice - getOpenPrice(symbol)
-
 }
